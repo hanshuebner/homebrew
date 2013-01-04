@@ -1,29 +1,14 @@
 require 'formula'
 
-class NoBdb5 < Requirement
-  def message; <<-EOS.undent
-    This software can fail to compile when Berkeley-DB 5.x is installed.
-    You may need to try:
-      brew unlink berkeley-db
-      brew install exim
-      brew link berkeley-db
-    EOS
-  end
-  def satisfied?
-    f = Formula.factory("berkeley-db")
-    not f.installed?
-  end
-end
-
 class Exim < Formula
   homepage 'http://exim.org'
-  url 'http://ftp.exim.org/pub/exim/exim4/exim-4.80.tar.gz'
-  sha1 '4ae4a8c66fad75a92c88b7ea1e4a46ef30a22995'
+  url 'http://ftp.exim.org/pub/exim/exim4/exim-4.80.1.tar.gz'
+  sha1 'eeb6d1e4c7c1dc0e4de55ba61316718e44d810b3'
 
   option 'support-maildir', 'Support delivery in Maildir format'
 
   depends_on 'pcre'
-  depends_on NoBdb5.new
+  depends_on 'berkeley-db4'
 
   def install
     cp 'src/EDITME', 'Local/Makefile'
@@ -44,8 +29,13 @@ class Exim < Formula
       s << "LOOKUP_LIBS=-L#{HOMEBREW_PREFIX}/lib\n"
     end
 
+    bdb4 = Formula.factory("berkeley-db4")
+
     inreplace 'OS/Makefile-Darwin' do |s|
       s.remove_make_var! %w{CC CFLAGS}
+      # Add include and lib paths for BDB 4
+      s.gsub! "# Exim: OS-specific make file for Darwin (Mac OS X).", "INCLUDE=-I${bdb4.include}"
+      s.gsub! "DBMLIB =", "DBMLIB=#{bdb4.lib}/libdb-4.dylib"
     end
 
     # The compile script ignores CPPFLAGS

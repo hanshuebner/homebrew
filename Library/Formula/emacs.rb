@@ -6,6 +6,9 @@ class Emacs < Formula
   mirror 'http://ftp.gnu.org/pub/gnu/emacs/emacs-24.2.tar.bz2'
   sha1 '38e8fbc9573b70a123358b155cf55c274b5a56cf'
 
+  conflicts_with 'ctags',
+    :because => 'Both emacs and ctags install a `ctags` executable.'
+
   option "cocoa", "Build a Cocoa version of emacs"
   option "srgb", "Enable sRGB colors in the Cocoa version of emacs"
   option "with-x", "Include X11 support"
@@ -25,8 +28,8 @@ class Emacs < Formula
   end
 
   def patches
-    if build.include? "cocoa"
-      # Fullscreen patch, works against 24.2 and HEAD.
+    # Fullscreen patch works against 24.2; already included in HEAD
+    if build.include? "cocoa" and not build.head?
       "https://raw.github.com/gist/1746342/702dfe9e2dd79fddd536aa90d561efdeec2ba716"
     end
   end

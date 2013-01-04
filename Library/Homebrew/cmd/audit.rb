@@ -155,6 +155,15 @@ class FormulaAuditor
     end
   end
 
+  def audit_conflicts
+    f.conflicts.each do |req|
+      begin
+        conflict_f = Formula.factory req.formula
+      rescue
+        problem "Can't find conflicting formula \"#{req.formula}\"."
+      end
+    end
+  end
 
   def audit_urls
     unless f.homepage =~ %r[^https?://]
@@ -381,7 +390,7 @@ class FormulaAuditor
       problem "Reference '#{$1}' without dashes"
     end
 
-    if text =~ /ARGV\.(?!(debug|verbose)\?)/
+    if text =~ /ARGV\.(?!(debug|verbose|find)\?)/
       problem "Use build instead of ARGV to check options"
     end
 
@@ -407,6 +416,7 @@ class FormulaAuditor
     audit_specs
     audit_urls
     audit_deps
+    audit_conflicts
     audit_patches
     audit_text
   end
